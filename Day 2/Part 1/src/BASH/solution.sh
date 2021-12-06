@@ -7,7 +7,7 @@
 #     Bash >= 4
 
 #Read in the entire file
-mapfile -t data < ./TheData.txt
+mapfile -t data < ../../TheData.txt
 vPos=0;
 hPos=0;
 #Pre-load the first window from the first 3 entries in the array
