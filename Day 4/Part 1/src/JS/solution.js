@@ -6,13 +6,104 @@
         Node
 */
 
-const data = require("./data.json");
+const fs = require("fs");
+const data = fs.readFileSync(__dirname + "\\..\\..\\TheData.txt", { encoding: "utf-8" }).split("\n");
 
-let hPos = 0, vPos = 0;
+class BingoBoard {
+    rows = [];
 
-//Iterate over dataset
-for(let i = 0; i < data.length; i++) {
+    search(number) {
+        for(let i = 0; i < this.rows.length; i++){
+            for(let j = 0; j < this.rows[i].length; j++) {
+                if(this.rows[i][j].value === number) {
+                    this.rows[i][j].isMarked = true;
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
+    evaluate() {
+        //Check rows.
+        let rowMatch;
+        for(let row of this.rows) {
+            rowMatch = row.filter(t => t.isMarked)
+            if(rowMatch.length === 5) {
+                return true;
+            }
+        }
+
+        //Check columns.
+        let vBingo = false;
+        for(let i = 0; i < 5; i++) {
+            for(let row of this.rows) {
+                vBingo = row[i].isMarked;
+                if(!vBingo) break;
+            }
+            if(vBingo)
+                break;
+        }
+        if(vBingo)
+            return true;
+        
+        return false;
+    }
+
+    sumUnmarked() {
+        let sum = 0;        
+        for(let row of this.rows)
+            sum += row.filter(v => !v.isMarked).reduce((a, b) => a + b.value, 0);
+        return sum;
+    }
+
+    parseRow(rowText) {
+        let textValues = rowText.trim().split(/\s+/);
+        let row = [];
+        for(let v of textValues)
+            row.push(new Tile(parseInt(v)));
+
+        this.rows.push(row);
+    }
 }
 
-console.log(hPos * vPos);
+class Tile {
+    value = 0;
+    isMarked = false;
+    constructor(v) {
+        this.value = v;
+    }
+}
+
+let numbers = data[0].split(',');
+
+let boards = [];
+let newBoard = new BingoBoard();
+
+for(let i = 2; i < data.length; i++) {
+    if(data[i].trim().length < 1) {
+        boards.push(newBoard);
+        newBoard = new BingoBoard();
+        continue;
+    }
+
+    newBoard.parseRow(data[i]);
+}
+boards.push(newBoard);
+newBoard = new BingoBoard();
+
+let result;
+
+for(let number of numbers) {
+    for(let board of boards) {
+        if(board.search(parseInt(number))){
+            if(!board.evaluate()) continue;
+
+            //board has won.
+            console.log(board.sumUnmarked() * number);
+            result = true;
+        }
+        if(result) break;
+    }
+    if(result) break;
+}
