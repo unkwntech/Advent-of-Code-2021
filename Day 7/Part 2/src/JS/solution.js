@@ -1,6 +1,5 @@
 /*
     Notes;
-    I converted the data into a JSON array to make processing slightly simpler.
 
     Requirements;
         Node
